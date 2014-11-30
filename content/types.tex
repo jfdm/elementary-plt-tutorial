@@ -189,7 +189,7 @@ env = [("foo", TyValue'), ("g", TyFunc' TyValue' TyValue')]
 \noindent
 $\Gamma_{1}$ can be updated as follows:
 \[
-\Gamma_{1},g:\mathbb{Z} =\{(foo,\mathbb{Z}),(g\mathbb{Z})\}
+\Gamma_{1},g:\mathbb{Z} =\{(foo,\mathbb{Z}),(g,\mathbb{Z})\}
 \]
 \begin{code}
 env' : TypeEnv String ArithTy' => Context String ArithTy'
@@ -198,11 +198,13 @@ env' = extend ("g", TyValue') env
 \noindent
 and:
 \[
-\Gamma_{1},f:(\mathbb{Z}\rightarrow\mathbb{Z})\rightarrow\mathbb{Z} =\{(foo,\mathbb{Z}),(g\mathbb{Z}),f:(\mathbb{Z}\rightarrow\mathbb{Z})\rightarrow\mathbb{Z}\}
+\Gamma_{1},f:(\mathbb{Z}\rightarrow\mathbb{Z})\rightarrow\mathbb{Z} =\{(foo,\mathbb{Z}),(g,\mathbb{Z}),(f,(\mathbb{Z}\rightarrow\mathbb{Z})\rightarrow\mathbb{Z})\}
 \]
 \begin{code}
 env'' : TypeEnv String ArithTy' => Context String ArithTy'
-env'' = extend ("f", TyFunc' (TyFunc' TyValue' TyValue') TyValue') env'
+env'' = extend ("f", TyFunc' (TyFunc' TyValue' TyValue')
+                             TyValue')
+               env'
 \end{code}
 
 \subsection{Improving the definition of \textsf{WellTyped}.}

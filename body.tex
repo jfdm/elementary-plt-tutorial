@@ -3,7 +3,7 @@
 
 \newcommand{\version}{\gitVtagn}
 
-\title{Introduction to Semantics and \idris{}}
+\title{Introduction to \emph{Formal Methods} using \idris{}}
 \author{Jan de Muijnck-Hughes}
 \date{\origdate\today}
 \addbibresource{biblio.bib}
@@ -12,17 +12,20 @@
 \maketitle%
 \begin{abstract}
 This tutorial will provide an introduction to some elementary topics in programming language theory.
-Namely: grammars, type systems, and denotational semantics.
-We will do this through construction of interpreters for two simple programming languages: \allang{}, and the well-typed lambda calculus---\lamlang{}.
-The dependently typed programming language \idris{} will be used to introduce these concepts \cite{}.
 
-\allang{} was orginally described formally in a blog post entitled \citetitle{Siek2012ccp}.
+\begin{itemize}
+\item Namely: grammars, type systems, and denotational semantics.
+\item We will do this through construction of interpreters for two simple programming languages: \allang{}, and the well-typed lambda calculus---\lamlang{}.
+The dependently typed programming language \idris{} will be used to introduce these concepts \cite{}.
+\begin{itemize}
+\item \allang{} was orginally described formally in a blog post entitled \citetitle{Siek2012ccp}.
 Here we present the formalisations together with an interpreter written in \idris{}.
 
-The interpreter for the well-typed lambda calculus was originally presented in the offical tutorial for \idris{} \cite{Community2014}.
+\item The interpreter for the well-typed $\lambda$ calculus was originally presented in the offical tutorial for \idris{} \cite{Community2014}.
 Here we present the interpreter with some additional material explaining the underlying formal methods.
-
-More information over Idris can be found online at: \url{http://www.idris-lang.org}
+\end{itemize}
+\item More information over Idris can be found online at: \url{http://www.idris-lang.org}
+\end{itemize}
 \end{abstract}
 
 \newpage
