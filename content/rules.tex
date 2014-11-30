@@ -61,7 +61,7 @@ For example here is a typing rule for \texttt{Addition}
 \begin{code}
 addition : Arith -> Arith -> Maybe Arith
 addition (Value a) (Value b) = Just (Value (a + b))
-addition _ _ = Nothing
+addition _         _         = Nothing
 \end{code}
 
 \noindent
@@ -77,9 +77,9 @@ We leverage our ability to use dependenty types, and embedd the type of each exp
 
 \begin{code}
 data Arith : ArithTy -> Type where
-  Value    : Int -> Arith TyValue
-  Var      : String -> Arith TyValue
-  Neg      : Arith TyValue -> Arith TyValue
+  Value    : Int                            -> Arith TyValue
+  Var      : String                         -> Arith TyValue
+  Neg      : Arith TyValue                  -> Arith TyValue
   Addition : Arith TyValue -> Arith TyValue -> Arith TyValue
 \end{code}
 
@@ -92,7 +92,7 @@ Recall from Section~\ref{}, that every expression needs to be assoicated with a 
 Thus as well as the type of each expression we embedd an instantiation of the type environment \texttt{env} with every expression.
 
 \begin{center}
-  \bfseries How to enforce variables?
+  \bfseries How to enforce variables? Is \texttt{HasType} the correct way?
 \end{center}
 
 %%% Local Variables:
