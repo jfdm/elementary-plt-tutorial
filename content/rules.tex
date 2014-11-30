@@ -1,0 +1,101 @@
+\section{Typing Rules}
+\label{sec:rules:what}
+
+\begin{quote}\em
+  Specifying how expressions are to be typed.
+\end{quote}
+
+Types and typing environments act as building blocks to help us construct well-typed programs.
+To construct the set of relations that for \textsf{WellTyped}, we need to define \emph{Typing Rules} that specify how expressions are typed and how types interact when expression are combined.
+
+\subsection{What are Typing Rules?}
+\label{sec:rules:what}
+
+Typing rules are a series of judgments that work in a particular context, with the top line defining the inputs and the bottom line the result.
+The \allang{} has the following small set of typing rules.
+Integers are given the type $\mathbb{Z}$.
+
+\begin{prooftree}
+\AxiomC{}
+\LeftLabel{Integers}
+\UnaryInfC{$\Gamma\vdash i : \mathbb{Z} $}
+\end{prooftree}
+
+\noindent
+Variables will have type $\mathbb{Z}$, only if the variable exists within $\Gamma$.
+\begin{prooftree}
+\AxiomC{$(x,T)\in\Gamma$}
+\AxiomC{$T:\mathbb{Z}$}
+\LeftLabel{Variables}
+\BinaryInfC{$\Gamma\vdash i : \mathbb{Z}$}
+\end{prooftree}
+
+\noindent
+Negation is only applied to integers.
+\begin{prooftree}
+\AxiomC{$\Gamma\vdash e : \mathbb{Z}$}
+\LeftLabel{Addition}
+\UnaryInfC{$\Gamma\vdash -e : \mathbb{Z}$}
+\end{prooftree}
+
+\noindent
+Addition only happens on integers.
+\begin{prooftree}
+\AxiomC{$\Gamma\vdash e_1 : \mathbb{Z}$}
+\AxiomC{$\Gamma\vdash e_2 : \mathbb{Z}$}
+\LeftLabel{Addition}
+\BinaryInfC{$\Gamma\vdash e_1+e_2 : \mathbb{Z}$}
+\end{prooftree}
+
+\noindent
+The \allang{} is simple enough that the point of typing rules might be hard to see.
+Imagine if \allang{} has the alternate typing system $T_{ALT}$ that includes boolean types.
+The above typing rules still hold.
+Addition will only work with integer values; expressions of type $\mathbb{B}$ cannot be used for addition.
+
+\subsection{Modelling Typing Rules.}
+\label{sec:rules:modelling}
+
+In non dependently typed languages we can \emph{model} typing rules through pattern matching.
+For example here is a typing rule for \texttt{Addition}
+\begin{code}
+addition : Arith -> Arith -> Maybe Arith
+addition (Value a) (Value b) = Just (Value (a + b))
+addition _ _ = Nothing
+\end{code}
+
+\noindent
+However, there are two problems with this implementation.
+First, this might be a bad implementation through the use of \texttt{Maybe}.
+My programming foo is not strong with this.
+Secondly, the typing context $\Gamma$ has not been taken into account.
+Without the typing context we don't know much.
+
+Before we introduce a typing context into our implemenation.
+Here is a better somewhat na\"{i}ve implementation of the typing rules.
+We leverage our ability to use dependenty types, and embedd the type of each expression directly within the constructors of a redefined data type of $AL$.
+
+\begin{code}
+data Arith : ArithTy -> Type where
+  Value    : Int -> Arith TyValue
+  Var      : String -> Arith TyValue
+  Neg      : Arith TyValue -> Arith TyValue
+  Addition : Arith TyValue -> Arith TyValue -> Arith TyValue
+\end{code}
+
+\noindent
+Just look at that compact representation and emebedding of the typing rules.
+Dependent types cool!
+
+Now we look to embedd a typing context $\Gamma$.
+Recall from Section~\ref{}, that every expression needs to be assoicated with a type environment.
+Thus as well as the type of each expression we embedd an instantiation of the type environment \texttt{env} with every expression.
+
+\begin{center}
+  \bfseries How to enforce variables?
+\end{center}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "../tutorial.print"
+%%% End:

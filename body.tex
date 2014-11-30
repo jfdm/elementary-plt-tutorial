@@ -1,0 +1,51 @@
+
+\input{conf.ltx}
+
+\newcommand{\version}{\gitVtagn}
+
+\title{Introduction to Semantics and \idris{}}
+\author{Jan de Muijnck-Hughes}
+\date{\origdate\today}
+\addbibresource{biblio.bib}
+\begin{document}
+
+\maketitle%
+\begin{abstract}
+This tutorial will provide an introduction to some elementary topics in programming language theory.
+Namely: grammars, type systems, and denotational semantics.
+We will do this through construction of interpreters for two simple programming languages: \allang{}, and the well-typed lambda calculus---\lamlang{}.
+The dependently typed programming language \idris{} will be used to introduce these concepts \cite{}.
+
+\allang{} was orginally described formally in a blog post entitled \citetitle{Siek2012ccp}.
+Here we present the formalisations together with an interpreter written in \idris{}.
+
+The interpreter for the well-typed lambda calculus was originally presented in the offical tutorial for \idris{} \cite{Community2014}.
+Here we present the interpreter with some additional material explaining the underlying formal methods.
+
+More information over Idris can be found online at: \url{http://www.idris-lang.org}
+\end{abstract}
+
+\newpage
+\tableofcontents
+\newpage
+
+\input{./content/grammar.tex}
+\input{./content/types.tex}
+\input{./content/rules.tex}
+
+%\input{./content/lamlang.tex}
+
+
+
+
+
+%\input{./content/intro.tex}
+
+%\input{./content/language.tex}
+% \input{./content/interp.tex}
+%\input{./content/conclusions.tex}
+
+\newpage
+\printbibliography{}
+
+\end{document}

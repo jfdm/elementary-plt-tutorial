@@ -34,5 +34,6 @@ tutorial.*.pdf
 *.vrb
 *.xdy
 *~
+.DS_Store
 ._DS_Store
 auto/

@@ -1,0 +1,83 @@
+\section{Modelling Syntax}
+\label{sec:notation}
+\begin{quote}
+  What do we say?
+\end{quote}
+
+Like natural languages spoken by people today, programming languages have their own syntax and grammar rules.
+These rules define the permissible expressions that are to be found within a language.
+Fortunatly, programming languages are not as complex (i.e. are context free) as natural language and as such their syntax can be describe rather conscisly.
+The most common notation used to present syntax is that of \emph{Backus-Naus Form} (BNF).
+There are several varients of BNF that prove popular, for example: eBNF and aBNF.
+
+A example of a BNF grammar to describe the syntax for a simple arithmetic language \allang{} is as follows:
+
+\begin{bnf}
+\bnfprod{AL}{%
+  \bnfts{integer}
+}\\
+\bnfprod{AL}{%
+  \bnfts{variable}
+}\\
+\bnfprod{AL}{%
+  \bnfts{``-''}\bnfpn{AL}
+}\\
+\bnfprod{AL}{%
+  \bnfpn{AL}\bnfts{``+''}\bnfpn{AL}
+}\\
+\bnfprod{AL}{%
+  \bnfts{``(''}\bnfpn{AL}\bnfts{``)''}
+}
+\end{bnf}
+
+This language allows for expressions that describe integer operations addition subtraction, and modification of precedence using parentheses.
+Notice how expressions are defined in terms of themselves.
+Such grammars can be modelled within \idris{} as a simple data type.
+
+\begin{code}
+data Arith : Type where
+  Value    : Int             -> Arith
+  Var      : String -> Arith -> Arith
+  Neg      : Arith           -> Arith
+  Addition : Arith  -> Arith -> Arith
+\end{code}
+
+
+The syntax presented in the BNF grammar can be made more precise through use of an \emph{or} combinator.
+
+\begin{bnf}
+\bnfprod{AL}{%
+  \bnfts{integer}
+  \bnfor
+  \bnfts{``-''}\bnfpn{AL}
+  \bnfor
+  \bnfpn{AL}\bnfts{``+''}\bnfpn{AL}
+}
+\end{bnf}
+
+Similar optimisations can be made to the \texttt{AL} data type.
+
+\begin{code}
+data Arith = Value Int | Var String | Neg Arith | Addition Arith Arith
+\end{code}
+
+\emph{Programming Language Theorists} (PLTs) are in the business of creating languages and BNF (and its popular variants) while descriptive and good to describe implementations can be too verbose.
+PLTs use a particular variant of BNF in which the name of the language being defined (\allang{}) is replaced by a variable used to range over all the possible values of \allang{}.
+The above BNF grammer would be re-expressed as follows:
+
+\begin{bnf}
+\bnfprod{$e$}{%
+  \bnfts{$i$}
+  \bnfor
+  \bnfts{$x$}
+  \bnfor
+  \bnfts{$-e$}
+  \bnfor
+  \bnfts{$e+e$}
+}
+\end{bnf}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "tutorial.print"
+%%% End:
