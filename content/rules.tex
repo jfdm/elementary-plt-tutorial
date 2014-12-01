@@ -78,7 +78,7 @@ We leverage our ability to use dependenty types, and embedd the type of each exp
 \begin{code}
 data Arith : ArithTy -> Type where
   Value    : Int                            -> Arith TyValue
-  Var      : String                         -> Arith TyValue
+  Var      : String        -> Arith TyValue -> Arith TyValue
   Neg      : Arith TyValue                  -> Arith TyValue
   Addition : Arith TyValue -> Arith TyValue -> Arith TyValue
 \end{code}
@@ -87,14 +87,25 @@ data Arith : ArithTy -> Type where
 Just look at that compact representation and emebedding of the typing rules.
 Dependent types cool!
 
+However, we are not finished yet.
 Now we look to embedd a typing context $\Gamma$.
-Recall from Section~\ref{}, that every expression needs to be assoicated with a type environment.
+Recall from Section~\ref{}, that every expression needs to be associated with a type environment.
 Thus as well as the type of each expression we embedd an instantiation of the type environment \texttt{env} with every expression.
 
-\begin{center}
-  \bfseries How to enforce variables? Is \texttt{HasType} the correct way?
-\end{center}
+\begin{code}
+data Arith : Context Arith ArithTy -> ArithTy -> Type where
+  Value  : Int -> Arith TyValue
+  -- Var is a special case...
+  Neg      : Arith TyValue -> Arith TyValue
+  Addition : Arith TyValue -> Arith TyValue -> Arith TyValue
+\end{code}
 
+\begin{center}
+  \bfseries How to enforce variable existence? Is \texttt{HasType} the correct way?
+\end{center}
+\begin{center}
+  \bfseries Need to introduce an implementation of $\Gamma$ i.e. \texttt{Env} from the idris tutorial?
+\end{center}
 %%% Local Variables:
 %%% mode: latex
 %%% TeX-master: "../tutorial.print"

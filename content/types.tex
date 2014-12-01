@@ -51,7 +51,6 @@ data ArithTy = TyValue
              | TyFunc ArithTy ArithTy
 \end{code}
 
-
 \noindent
 It is interesting to note how we can model in \idris{} types and grammars in similar ways.
 
@@ -91,7 +90,7 @@ However, in languages with variables such a simple relations is not sufficient.
 Variables are mutable and the type of a variables will not be known prior to the use of the variable, and may change during program execution.
 To address this issue we introduce the concept of a \emph{typing environment}, which is defined as a set that contains tuples of variables and their types: $(x,T)$
 Type environments can be extended, and the addition of new variables to the environment may result in old definitions being removed.
-Traditionally, type environments are denoted by the greek letter $\Gamma$.
+Traditionally, typing environments are denoted by the greek letter $\Gamma$.
 A simple definition for a typing environment for the \allang{} language in \idris{} is a list of variable name type pairs.
 For readability we first construct a generic type alias \texttt{Context var ty}, that specifies the variable  (\texttt{var}) and its current type (\texttt{ty}) of the language being represented.
 
@@ -232,6 +231,8 @@ To save on typing the short hand $\Gamma\vdash e:T$ is used.
 WellTyped : Type
 WellTyped = List (Context Arith ArithTy , Arith, ArithTy)
 \end{code}
+
+
 
 %%% Local Variables:
 %%% mode: latex
