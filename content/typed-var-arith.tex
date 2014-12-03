@@ -1,0 +1,274 @@
+\section{Well-Typed Arithmetic with Variables}
+\label{sec:typed-arith-var}
+
+In this section we will extend our well-typed arithmetic language to include the use of free variables.
+Specifically, this section will provide further coverage on:
+\begin{compactitem}
+  \item Typing Contexts; and
+  \item Typing Rules.
+\end{compactitem}
+
+\subsection{Language Syntax}
+\label{sec:typed-arith-var:syntax}
+
+We extend the syntax of our language to include variables:
+
+\begin{bnf}
+\bnfprod{$e$}{%
+  \bnfts{$i$}
+  \bnfor
+  \bnfts{$x$}
+  \bnfor
+  \bnfts{$-e$}
+  \bnfor
+  \bnfts{$e+e$}
+  \bnfor
+  \bnfts{$e-e$}
+  \bnfor
+  \bnfts{$e/e$}
+  \bnfor
+  \bnfts{$e*e$}
+}
+\end{bnf}
+
+\noindent
+Variables will be represented as $x$.
+Before the resulting \idris{} representation can be given we must first re-examine our notion of typing environments and introduce typing contexts.
+
+\subsection{Types}
+\label{sec:typed-arith-var:types}
+
+When presenting the typing environment in Section~\ref{sec:typed-arith:type-env} the language did not have variables and as such a nominal ``empty'' typing environment was sufficient.
+However, we have now introduced variables.
+Working with variables is problematic in that variables are  mutable and the type of a variable will not be known \emph{a priori}, and may change during program execution\footnote{Well with this particular language, variables will always have the same type.}.
+To address this issue we partially introduced the concept of a \emph{typing environment} in Section~\ref{sec:typed-arith:type-env}.
+
+Traditionally, typing environments are denoted by the greek letter $\Gamma$.
+A typing environment is defined as a set that contains tuples of variable values and their types: $(x,T)$.
+Type environments can be extended, and the addition of new variables to the environment may result in old definitions being removed.
+
+When working with typing environments it is important to consider the list of available types separately from their values.
+This separation allows us to consider the types for particular contexts outside what their values actually are.
+
+\subsubsection{Typing Contexts}
+\label{sec:typed-arith-var:contexts}
+
+We define a \emph{typing context} as the pairing between a representation of a variable and its type.
+We first construct a generic type alias \texttt{Context ty}, that represents a typing context with type \texttt{ty}.
+
+\begin{code}
+Context : Type -> Type
+Context ty = List (String, ty)
+\end{code}
+
+\noindent
+Using this alias we can then create typing environments of type \texttt{Context ty}.
+For example type environments using our language can be modelled as
+
+\begin{code}
+example_context : Context ArithTy
+example_context = [("foo", TyValue), ("bar", TyValue)]
+\end{code}
+
+\noindent
+\textbf{Note} Here we are purposefully using a \emph{named representation} and keeping track of variables using their actual name.
+This makes it easier to understand what is going on within contexts.
+An alternate would be to use a \emph{nameless representation}, in our larger case study (Section~\ref{}) we will show how a nameless representation using \emph{de Bruijn} indices works.
+
+Before type environments can be used in anger we define several operations that operate on $\Gamma$.
+
+\paragraph{Removing}
+\label{sec:typed-arith-var:types:remove}
+
+The first operation will update $\Gamma$ by removing all references to $x$.
+\[
+\Gamma\backslash x
+\]
+\noindent
+This operation can be implemented as follows:
+\begin{code}
+remove : (String, ty) -> Context ty -> Context ty
+remove e es = deleteBy (\(x,y),(c,d) => x==c) e es
+\end{code}
+
+\paragraph{Extending}
+\label{sec:typed-arith-var:types:extend}
+
+The second operations is used to extend $\Gamma$ with a variable $x$ of type $T$.
+This operation will overide previous $x$.
+\[
+\Gamma,x:T = (\Gamma\backslash x)\cup\{x,T\}
+\]
+\noindent
+Which can be representened as:
+\begin{code}
+extend : (String, ty) -> Context ty -> Context ty
+extend e es = e :: (remove e es)
+\end{code}
+
+\paragraph{Searching}
+\label{sec:typed-arith-var:types:lookup}
+
+For completness, the final operation defined is used to search the typying environment to extract the type for a specified variable.
+\[
+\mathsf{lookup}(\Gamma,x:T) = \text{??}
+\]
+\noindent
+This can be implemented as:
+\begin{code}
+lookup : String -> Context ty -> Maybe ty
+lookup = List.lookup
+\end{code}
+
+\paragraph{Improving \idris{} Implementation}
+\label{sec:typed-arith-var:types:classes}
+
+We can enforce our formal models of typing contexts in \idris{} better by creating a type class that groups our default implementations together as follows:
+
+\begin{code}
+class (Eq ty) => TypingContext ty where
+  remove : (String, ty) -> Context ty -> Context ty
+  extend : (String, ty) -> Context ty -> Context ty
+  lookup : String       -> Context ty -> Maybe ty
+
+  remove e es = deleteBy (\(x,y),(c,d) => x==c) e es
+  extend e es = e :: (remove e es)
+  lookup = List.lookup
+\end{code}
+
+\paragraph{Examples}
+\label{sec:typed-arith-var:types:examples}
+
+Explaining changes to a typing context is difficult to observe with type systems that only have a single type.
+We further motivate the need for typing contexts by using an alternate type system in which we introduce an additional type: $\mathbb{B}$ for expressions of type boolean.
+Such boolean types will have a type constructor $TyBool$.
+Examples of typing contexts and their operations are as follows:
+
+\[
+\Gamma_{1}=\{(foo,\mathbb{Z}),(g,\mathbb{B}\}
+\]
+
+\begin{code}
+ctxt : Context ArithTy
+ctxt = [("foo", TyValue), ("g", TyBool)]
+\end{code}
+
+\noindent
+$\Gamma_{1}$ can be updated as follows:
+\[
+\Gamma_{1},g:\mathbb{Z} =\{(foo,\mathbb{Z}),(g,\mathbb{Z})\}
+\]
+\begin{code}
+env' : TypingContext ArithTy => Context ArithTy
+env' = extend ("g", TyValue) ctxt
+\end{code}
+\noindent
+and:
+\[
+\Gamma_{1},f:\mathbb{B}=\{(foo,\mathbb{Z}),(g,\mathbb{Z}),(f,\mathbb{B})\}
+\]
+\begin{code}
+env'' : TypingContext ArithTy => Context ArithTy
+env'' = extend ("f", TyBool) env'
+\end{code}
+
+\subsubsection{Typing Environments }
+\label{sec:typed-arith-var:environments}
+
+Now that we have defined a typing context we look to define a typing environment.
+Recall that our typing environment is defined a set of tuples containing variable values and their types: $(x,T)$.
+This can be represented in \idris{} as a variant of a list in which the data type contains the typing context:
+
+\begin{code}
+data Env : Context ArithTy -> Type where
+  Nil  : Env Nil
+  (::) : (e : (String, Int)) -> Env g
+       -> Env (extend (fst e, TyValue) g)
+\end{code}
+
+\noindent
+We also construct a complementary function that allows us to extract the value of a variable from the environment.
+
+\begin{code}
+getValue : String -> Env g -> Int
+getValue n Nil           = 0
+getValue n ((a,v) :: xs) = case n == a of
+  True => v
+  False => fromEnv n xs
+\end{code}
+
+\subsection{Additional Typing Rules}
+\label{sec:typed-arith-var:typing-rules}
+
+With our new knowledge of typing environments we can now update our list of typing rules to include variables:
+
+\begin{prooftree}
+\AxiomC{$(x,T)\in\Gamma$}
+\AxiomC{$T:\mathbb{Z}$}
+\LeftLabel{Variables}
+\BinaryInfC{$\Gamma\vdash i : \mathbb{Z}$}
+\end{prooftree}
+
+\noindent
+In our language, a variable will be associated with a type $T$ if that variable exists within the typing environment.
+That is if the result of a look-up in the typing context returns the type and not \texttt{Nothing}.
+For example:
+
+\begin{code}
+ctxt : Context ArithTy
+ctxt = [("foo", TyValue), ("g", TyBool)]
+
+test : Bool
+test = (Just TyValue) == lookup "foo" ctxt
+\end{code}
+
+\noindent
+However, as our language only has a single type we can skip this step\footnote{Or maybe not\ldots}.
+
+\subsection{New Model}
+\label{sec:typed-arith-var:model}
+
+Armed with our knowledge of typing contexts and extended set of typing rules, we can now proceed to define new version of the \texttt{Arith} data type in which we embed the typing context $\Gamma$ within each expression.
+
+\begin{code}
+data Arith : Context ArithTy -> ArithTy -> Type where
+  Val : Int                                -> Arith g TyValue
+  Var : (n : String)                       -> Arith g TyValue
+  Neg : Arith g TyValue                    -> Arith g TyValue
+  Add : Arith g TyValue -> Arith g TyValue -> Arith g TyValue
+  Sub : Arith g TyValue -> Arith g TyValue -> Arith g TyValue
+  Div : Arith g TyValue -> Arith g TyValue -> Arith g TyValue
+  Mul : Arith g TyValue -> Arith g TyValue -> Arith g TyValue
+\end{code}
+
+\noindent
+And redefine our interpreter to work with new definition of \texttt{Arith}.
+
+\begin{code}
+interp : Env g -> Arith g TyValue -> Int
+interp env (Val x)    = x
+interp env (Var n)    = getValue n env
+interp env (Neg x)    = (-1) * (interp env x)
+interp env (Add x y)  = (interp env x) + (interp env y)
+interp env (Sub x y)  = (interp env x) - (interp env y)
+interp env (Div x y)  = (interp env x) `div` (interp env y)
+interp env (Mul x y)  = (interp env x) * (interp env y)
+\end{code}
+
+\subsection{Executing Programs}
+\label{sec:typed-arith-var:running}
+
+We can now proceed to execute programs.
+As our programs use free variables, variables and their values must be defined within the environment.
+For example we define the program: $1 + x$, and then execute the program with $x=3$.
+
+\begin{code}
+main : IO ()
+main = do
+  print $ interp [("x",3)] (Add (Val 1) (Var "x"))
+\end{code}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "../tutorial.print"
+%%% End:

@@ -175,7 +175,7 @@ Before we can specify typing rules, we need to first introduce the notion of \em
 \label{sec:typed-arith:type-env}
 
 When working with languages keeping track of what elements in the language have what types is important.
-For simple languages, such as the one introduced in this Section, a simple set of relations can be sufficient.
+For simple languages, such as the one introduced in this section, there is no need: All expressions have the same type.
 However, in languages with variables, simple relations are not sufficient.
 \emph{Typing Environments} are used to keep track of local variables and their types, and are explained in more depth in the next section.
 
@@ -188,12 +188,8 @@ The $\mathsf{WellTyped}$ set will contain expressions that have a type $T$ deriv
 (\Gamma,e,T)\in\mathsf{WellTyped}
 \]
 \noindent
-To save on typing the short hand $\Gamma\vdash e:T$ is used.
-
-\begin{code}
-WellTyped : Type
-WellTyped = List (Context Arith ArithTy , Arith, ArithTy)
-\end{code}
+To save on typing, the short hand $\Gamma\vdash e:T$ is used.
+As our typing environment is empty the empty set symbol is used instead of $\Gamma$.
 
 \subsection{Typing Rules}
 \label{sec:typed-arith:rules}
@@ -211,46 +207,46 @@ Integers are given the type $\mathbb{Z}$.
 \begin{prooftree}
 \AxiomC{}
 \LeftLabel{Integers}
-\UnaryInfC{$\Gamma\vdash i : \mathbb{Z} $}
+\UnaryInfC{$\emptyset\vdash i : \mathbb{Z} $}
 \end{prooftree}
 
 \noindent
 Negation is only applied to integers.
 \begin{prooftree}
-\AxiomC{$\Gamma\vdash e : \mathbb{Z}$}
+\AxiomC{$\emptyset\vdash e : \mathbb{Z}$}
 \LeftLabel{Addition}
-\UnaryInfC{$\Gamma\vdash -e : \mathbb{Z}$}
+\UnaryInfC{$\emptyset\vdash -e : \mathbb{Z}$}
 \end{prooftree}
 
 \noindent
 Operations only work with integers:
 
 \begin{prooftree}
-\AxiomC{$\Gamma\vdash e_1 : \mathbb{Z}$}
-\AxiomC{$\Gamma\vdash e_2 : \mathbb{Z}$}
+\AxiomC{$\emptyset\vdash e_1 : \mathbb{Z}$}
+\AxiomC{$\emptyset\vdash e_2 : \mathbb{Z}$}
 \LeftLabel{Addition}
-\BinaryInfC{$\Gamma\vdash e_1+e_2 : \mathbb{Z}$}
+\BinaryInfC{$\emptyset\vdash e_1+e_2 : \mathbb{Z}$}
 \end{prooftree}
 
 \begin{prooftree}
-\AxiomC{$\Gamma\vdash e_1 : \mathbb{Z}$}
-\AxiomC{$\Gamma\vdash e_2 : \mathbb{Z}$}
+\AxiomC{$\emptyset\vdash e_1 : \mathbb{Z}$}
+\AxiomC{$\emptyset\vdash e_2 : \mathbb{Z}$}
 \LeftLabel{Subtraction}
-\BinaryInfC{$\Gamma\vdash e_1-e_2 : \mathbb{Z}$}
+\BinaryInfC{$\emptyset\vdash e_1-e_2 : \mathbb{Z}$}
 \end{prooftree}
 
 \begin{prooftree}
-\AxiomC{$\Gamma\vdash e_1 : \mathbb{Z}$}
-\AxiomC{$\Gamma\vdash e_2 : \mathbb{Z}$}
+\AxiomC{$\emptyset\vdash e_1 : \mathbb{Z}$}
+\AxiomC{$\emptyset\vdash e_2 : \mathbb{Z}$}
 \LeftLabel{Multiplication}
-\BinaryInfC{$\Gamma\vdash e_1*e_2 : \mathbb{Z}$}
+\BinaryInfC{$\emptyset\vdash e_1*e_2 : \mathbb{Z}$}
 \end{prooftree}
 
 \begin{prooftree}
-\AxiomC{$\Gamma\vdash e_1 : \mathbb{Z}$}
-\AxiomC{$\Gamma\vdash e_2 : \mathbb{Z}$}
+\AxiomC{$\emptyset\vdash e_1 : \mathbb{Z}$}
+\AxiomC{$\emptyset\vdash e_2 : \mathbb{Z}$}
 \LeftLabel{Division}
-\BinaryInfC{$\Gamma\vdash e_1/e_2 : \mathbb{Z}$}
+\BinaryInfC{$\emptyset\vdash e_1/e_2 : \mathbb{Z}$}
 \end{prooftree}
 
 \subsubsection{Modelling Typing Rules}
