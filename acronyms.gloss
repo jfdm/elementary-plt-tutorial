@@ -1,0 +1,3 @@
+\newacronym{bnf}{BNF}{Backus-Naur Form}
+\newacronym{ebnf}{eBNF}{Extended-Backus-Naur Form}
+\newacronym{abnf}{aBNF}{Augmented-Backus-Naur Form}

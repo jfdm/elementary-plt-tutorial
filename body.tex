@@ -7,6 +7,10 @@
 \author{Jan de Muijnck-Hughes}
 \date{\origdate\today}
 \addbibresource{biblio.bib}
+\loadglsentries[type=\acronymtype]{./acronyms.gloss}
+\loadglsentries{./glossary.gloss}
+\makeglossaries
+
 \begin{document}
 
 \maketitle%
@@ -42,5 +46,7 @@ Here we present the interpreter with some additional material explaining the und
 
 \newpage
 \printbibliography{}
-
+\newpage
+\glsaddall
+\printglossary[style=listdotted]
 \end{document}

@@ -1,0 +1,47 @@
+% \newglossaryentry{ }{%
+%
+%  name={ },
+%  description={ }
+% }
+
+\newglossaryentry{syntax}{%
+ name={Language Syntax},
+ description={What do we say.}
+}
+
+\newglossaryentry{grammar}{%
+  name={Grammar},
+  description={A means to describe what we say.}
+}
+
+\newglossaryentry{semantics}{%
+ name={Language Semantics},
+ description={What we mean when we say.}
+}
+
+\newglossaryentry{tysys}{%
+  name={Type System},
+  description={A means to know what we say is correct.}
+}
+
+\newglossaryentry{tyenv}{%
+  name={Typing Environment},
+  description={A means to keep track of the types for local variables.}
+}
+
+\newglossaryentry{tyrules}{%
+  name={Typing Rules},
+  description={A means to construct well-typed expressions.}
+}
+
+\newglossaryentry{denote}{%
+  name={Denotational Semantics},
+  description={A means to describe what I mean using an existing base.}
+}
+
+\newglossaryentry{oper}{%
+  name={Operational Semantics},
+  description={A means to describe what I mean computationally.}
+}
+
+% and semantics helps us define \emph{what we mean when we say}.
