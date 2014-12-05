@@ -1,0 +1,445 @@
+\section{Well-Typed $\lambda$-Calculus}
+\label{sec:lambda}
+
+
+This section will present a more comprehensive example that utilises the concepts seen in this tutorial.
+The example will be a variant of the well-typed $\lambda$ calculus.
+Specifically, this section will provide further coverage of:
+\begin{compactitem}
+  \item Typing Contexts; and
+  \item Typing Rules.
+\end{compactitem}
+We will do so through consideration of nameless representations for typing environments and contexts.
+
+\subsection{Language Syntax}
+\label{sec:lambda:syntax}
+
+We begin by introducing the syntax for our variant of the $\lambda$-calculus.
+This variant of the language, which we refer to as \lamlang{}, was originally introduced in \citet{Community2014}.
+We present a more specific variant in which a predefined set of binary operations are to be modelled.
+
+\textbf{Note} the variant presented in this section does not have an \emph{as} compact representation as that presented in \citet{Community2014}.
+We use a more obtuse representation on purpose.
+
+\lamlang{} will support the following constructs:
+\begin{inparaenum}
+  \item Values,
+  \item Variables,
+  \item Binary Operators, representing arithmetic, boolean, and relational oeprations,
+  \item Function application,
+  \item Conditional statements; and
+  \item Anonymous functions.
+\end{inparaenum}
+The grammar rules are:
+
+\begin{bnf}
+\bnfprod{$e$}{%
+  \bnfts{$i$}
+  \bnfor
+  \bnfts{$x$}
+  \bnfor
+  \bnfts{$e\circ e$}
+  \bnfor
+  \bnfts{$e\;\$\;e$}
+  \bnfor
+  \bnfts{$e\;?\;e : e$}
+  \bnfor
+  \bnfts{$\lambda x:T.e$}
+}\\
+\bnfprod{$\circ$}{
+  \bnfts{$\circ_{a}$}
+  \bnfor
+  \bnfts{$\circ_{r}$}
+  \bnfor
+  \bnfts{$\circ_{b}$}
+}\\
+\bnfprod{$\circ_{a}$}{
+  \bnfts{$/$}
+  \bnfor
+  \bnfts{$*$}
+  \bnfor
+  \bnfts{$+$}
+  \bnfor
+  \bnfts{$-$}
+}\\
+\bnfprod{$\circ_{r}$}{
+  \bnfts{$>$}
+  \bnfor
+  \bnfts{$<$}
+  \bnfor
+  \bnfts{$\equiv$}
+}\\
+\bnfprod{$\circ_{b}$}{
+  \bnfts{$\wedge$}
+  \bnfor
+  \bnfts{$\vee$}
+}
+\end{bnf}
+
+\noindent
+In \lamlang{}:
+
+\begin{center}
+\begin{tabular}[h]{>{$}l<{$}l}
+i       & are integer variables. \\
+x       & represents variable names.\\
+\circ   & is an infix binary operation.\\
+\$      & is function application.\\
+?       & is a ternary representation of a conditional statement.\\
+\lambda & are anonymous functions in which the function argument $x$ has type $T$.\\
+\end{tabular}
+\end{center}
+
+\noindent
+The syntax for \lamlang{} can be na\"{i}vly modelled in \idris{} as follows:
+
+\begin{code}
+data Expr = Val Int
+          | Var String Expr
+          | Div Expr Expr | Mul Expr
+          | Add Expr Expr | Sub Expr Expr
+          | GT Expr Expr  | LT Expr Expr | Eqv Expr Expr
+          | And Expr Expr | OR Expr Expr
+          | App Expr Expr
+          | If Expr Expr Expr
+          | Lam Expr
+\end{code}
+
+\noindent
+However, a smarter representation of \lamlang{} is to generalise binary operations according to their type such that an operation is defined as a function that is applied to two expressions.
+However, a even more compact representation is to have a single generic binary expression operation.
+\begin{code}
+data Expr = Val Int
+          | Var String Expr
+          | Op (Expr -> Expr -> Expr) Expr Expr
+          | App Expr Expr
+          | If Expr Expr Expr
+          | Lam Expr
+\end{code}
+
+\noindent
+Example instances of programs written in \lamlang{} include:
+
+\begin{align*}
+  1 + 2\\
+  3 > 4\\
+  \backslash x.\backslash y. x + y\\
+ \backslash x.(\neg x)\\
+\end{align*}
+
+
+
+\subsection{Types Revisited}
+\label{sec:lambda:types}
+
+Within \lamlang{} the types of each value will be either integers $\mathbb{Z}$, booleans $\mathbb{B}$, and functions and will be defined as transformation beteen two types.
+
+\begin{bnf}
+\bnfprod{$T$}{%
+  \bnfts{$\mathbb{Z}$}
+  \bnfor
+  \bnfts{$\mathbb{B}$}
+  \bnfor
+  \bnfts{$T\rightarrow T$}
+}
+\end{bnf}
+
+A function type indicates the mapping from the type of the arugment to the type of the return value.
+The purpose of a type system is to allow for the type of an expression to be calculated from the expression itself.
+For example, the expression $e=(1 + 2)$ will have type $\mathbb{Z}$ as the result of evaluating $e$ will be $3$ which is an integer.
+
+These types can be modelled in \idris{} as follows:
+
+\begin{code}
+data Ty = TyValue
+        | TyBool
+        | TyFunc Ty Ty
+\end{code}
+
+\noindent
+Again it is interesting to note how we can model in \idris{} types and grammars in similar ways.
+
+\subsection{Types Environments Revisited}
+\label{sec:lambda:typing}
+
+When presenting the typing environment in Section~\ref{sec:typed-arith:type-env} the language did not have variables and as such a nominal ``empty'' typing environment was sufficient.
+Section~\ref{sec:typed-arith-var:environments} introduced how typing environments  and contexts can be used to keep track of variables, their values, and their types.
+This was illustrated using a \emph{named representation}.
+In this section we will use a \emph{nameless representation} called \emph{de Bruijn indices} as an alternate representation.
+\todo{Add math definition for de Bruijn incidies}.
+
+\subsubsection{Contexts}
+\label{sec:lambda:typing:contexts}
+
+Contexts can be simply implemented as a vector of types.
+As the context is to be used regularly as an implicit argument, we can define all the implementation within a \texttt{using} block.
+
+\begin{code}
+using (g:Vect n Ty)
+\end{code}
+
+\subsubsection{Membership Proof}
+\label{sec:lambda:typing:membership-proof}
+
+\emph{de Bruijn indicies} are a nameless representation in which variables are represented by a proof that states their membership of a particular context.
+This proof can be represented using the data type \texttt{HasType i G T}.
+Which reads a proof that variable \texttt{i} in context \texttt{G} has type \texttt{T}.
+We can define it as follows:
+
+\begin{code}
+data HasType : (i : Fin n) -> Vect n Ty -> Ty -> Type where
+    Recent : HasType FZ (t :: g) t
+    Next   : HasType k g t -> HasType (FS k) (u :: g) t
+\end{code}
+
+\noindent
+\texttt{HasType} is an inductive style proof.
+The constructor \texttt{Recent} can be seen as the base case which states that the most recently defined variable is well typed.
+The constructor \texttt{Next n} is the inductive case that states if the $n^{th}$ most recently defined variable is well-typed, then so is the $n+1^{th}$ variable.
+With this \emph{proof}, \texttt{Recent} represents the most recently defined variables, and \texttt{Next Recent} to refer to the next variable and so on.
+
+\subsubsection{Environments}
+\label{sec:lambda:typying:envs}
+
+To keep track of the types in scope, we need an environment.
+Our definition of environment changes little from Section~\ref{sec:typed-arith-var:environments}.
+We drop the variable name value pairings and just store the values.
+
+\begin{code}
+data Env : Vect n Ty -> Type where
+    Nil  : Env Nil
+    (::) : interpTy a -> Env g -> Env (a :: g)
+\end{code}
+
+\noindent
+As with our definition of the context, we store the most recently defined variable at the head of the list.
+We also abuse the list construct so that the list syntax from \idris{} can be used.
+
+We can also define a function \texttt{lookup} that when given a proof that a variable is defined within the context, a value can be extracted from the environment.
+
+\begin{code}
+
+lookup : HasType i g t -> Env g -> interpTy t
+lookup Recent   (x :: xs) = x
+lookup (Next k) (x :: xs) = lookup k xs
+\end{code}
+
+\subsection{Typing Rules}
+\label{sec:lambda:rules}
+
+Here we define the rules that allow us to construct \emph{well-typed} expressions.
+
+\subsubsection{Values}
+\label{sec:type:rules:values}
+Here we define integer and boolean values and assign them a type.
+\begin{prooftree}
+\AxiomC{}
+\LeftLabel{Integers}
+\UnaryInfC{$\Gamma\vdash i : \mathbb{Z} $}
+\end{prooftree}
+
+\begin{prooftree}
+\AxiomC{}
+\LeftLabel{Booleans}
+\UnaryInfC{$\Gamma\vdash b : \mathbb{B} $}
+\end{prooftree}
+
+\subsubsection{Arithmetic Operations}
+\label{sec:type:rules:arith}
+
+Arithmetic operations have the following types.
+
+\begin{prooftree}
+\AxiomC{$\Gamma\vdash e_1 : \mathbb{Z}$}
+\AxiomC{$\Gamma\vdash e_2 : \mathbb{Z}$}
+\LeftLabel{Division}
+\BinaryInfC{$\Gamma\vdash e_1/e_2 : \mathbb{Z}$}
+\end{prooftree}
+
+\begin{prooftree}
+\AxiomC{$\Gamma\vdash e_1 : \mathbb{Z}$}
+\AxiomC{$\Gamma\vdash e_2 : \mathbb{Z}$}
+\LeftLabel{Multiplication}
+\BinaryInfC{$\Gamma\vdash e_1*e_2 : \mathbb{Z}$}
+\end{prooftree}
+
+\begin{prooftree}
+\AxiomC{$\Gamma\vdash e_1 : \mathbb{Z}$}
+\AxiomC{$\Gamma\vdash e_2 : \mathbb{Z}$}
+\LeftLabel{Addition}
+\BinaryInfC{$\Gamma\vdash e_1+e_2 : \mathbb{Z}$}
+\end{prooftree}
+
+\begin{prooftree}
+\AxiomC{$\Gamma\vdash e_1 : \mathbb{Z}$}
+\AxiomC{$\Gamma\vdash e_2 : \mathbb{Z}$}
+\LeftLabel{Subtraction}
+\BinaryInfC{$\Gamma\vdash e_1-e_2 : \mathbb{Z}$}
+\end{prooftree}
+
+\subsubsection{Boolean Operations}
+\label{sec:types:rules:boolean}
+
+Boolean operations can only work on bools.
+
+\begin{prooftree}
+\AxiomC{$\Gamma\vdash e_1 : \mathbb{B}$}
+\AxiomC{$\Gamma\vdash e_2 : \mathbb{B}$}
+\LeftLabel{And}
+\BinaryInfC{$\Gamma\vdash e_1\wedge e_2 : \mathbb{B}$}
+\end{prooftree}
+
+\begin{prooftree}
+\AxiomC{$\Gamma\vdash e_1 : \mathbb{B}$}
+\AxiomC{$\Gamma\vdash e_2 : \mathbb{B}$}
+\LeftLabel{Or}
+\BinaryInfC{$\Gamma\vdash e_1\vee e_2 : \mathbb{B}$}
+\end{prooftree}
+
+\begin{prooftree}
+\AxiomC{$\Gamma\vdash e : \mathbb{B}$}
+\LeftLabel{Negation}
+\UnaryInfC{$\Gamma\vdash \neg e : \mathbb{B}$}
+\end{prooftree}
+
+\subsubsection{Relational Operations}
+\label{sec:types:rules:relation}
+
+Numerical comparison operations result in boolean results.
+
+\begin{prooftree}
+\AxiomC{$\Gamma\vdash e_1 : \mathbb{Z}$}
+\AxiomC{$\Gamma\vdash e_2 : \mathbb{Z}$}
+\LeftLabel{Greater Than}
+\BinaryInfC{$\Gamma\vdash e_1 > e_2 : \mathbb{B}$}
+\end{prooftree}
+
+\begin{prooftree}
+\AxiomC{$\Gamma\vdash e_1 : \mathbb{Z}$}
+\AxiomC{$\Gamma\vdash e_2 : \mathbb{Z}$}
+\LeftLabel{Less than}
+\BinaryInfC{$\Gamma\vdash e_1< e_2 : \mathbb{B}$}
+\end{prooftree}
+
+\begin{prooftree}
+\AxiomC{$\Gamma\vdash e_1 : \mathbb{Z}$}
+\AxiomC{$\Gamma\vdash e_2 : \mathbb{Z}$}
+\LeftLabel{Equality}
+\BinaryInfC{$\Gamma\vdash e_1\equiv e_2 : \mathbb{B}$}
+\end{prooftree}
+
+
+\subsubsection{Variables}
+\label{sec:types:rules:variables}
+Variables can either be booleans or integers.
+\begin{prooftree}
+\AxiomC{$(x,T)\in\Gamma$}
+\AxiomC{$T:\mathbb{Z}$}
+\LeftLabel{Integer Variables}
+\BinaryInfC{$\Gamma\vdash i : \mathbb{Z} $}
+\end{prooftree}
+
+\begin{prooftree}
+\AxiomC{$(x,T)\in\Gamma$}
+\AxiomC{$T:\mathbb{B}$}
+\LeftLabel{Boolean Variables}
+\BinaryInfC{$\Gamma\vdash b : \mathbb{B} $}
+\end{prooftree}
+
+\subsubsection{Functions}
+\label{sec:types:rules:functions}
+
+\begin{prooftree}
+\AxiomC{$\Gamma\vdash e_1 : \mathbb{B}$}
+\AxiomC{$\Gamma\vdash e_2 : T$}
+\AxiomC{$\Gamma\vdash e_3 : T$}
+\LeftLabel{Conditionals}
+\TrinaryInfC{$\Gamma\vdash (e_1?e_2:e_3): T$}
+\end{prooftree}
+
+\begin{prooftree}
+\AxiomC{$\Gamma,x:T_1\vdash e : T_2$}
+\LeftLabel{Anonymous Functions}
+\UnaryInfC{$\Gamma\vdash (\lambda x:T_1.e) : (T_1\rightarrow T_2)$}
+\end{prooftree}
+
+\begin{prooftree}
+\AxiomC{$\Gamma\vdash e_1 : T\rightarrow\alt{T}$}
+\AxiomC{$\Gamma\vdash e_2 : T$}
+\LeftLabel{Application}
+\BinaryInfC{$\Gamma\vdash e_1 \$ e_2 : \alt{T}$}
+\end{prooftree}
+
+\subsection{Model}
+\label{sec:lambda:model}
+\begin{code}
+data Expr : Vect n Ty -> Ty -> Type where
+    Var : HasType i g t   -> Expr g t
+    Val : (x : Int)       -> Expr g TyInt
+    Lam : Expr (a :: g) t -> Expr g (TyFun a t)
+    App : Expr g (TyFun a t) -> Expr g a -> Expr g t
+    Op  : (interpTy a -> interpTy b -> interpTy c)
+            -> Expr g a
+            -> Expr g b
+            -> Expr g c
+    If  : Expr g TyBool
+          -> Lazy (Expr g a)
+          -> Lazy (Expr g a)
+          -> Expr g a
+\end{code}
+
+\subsection{Denotational Semantics}
+\label{sec:lambda:semantics}
+
+The purpose of this section is to provide an \emph{interpretation} of \lamlang{} to \idris{}.
+The next section will illustrate how an interpreter can be constructed in \idris{} to run our \lamlang{} programs.
+
+\subsubsection{Values \& Variables}
+\label{sec:semantics:variables}
+Values are translated directly into their \idris{} representation.
+Variables are special\ldots
+
+\begin{center}
+\begin{tabularx}{0.8\textwidth}{>{$}r<{$}>{\ttfamily}X}
+\interpB{i}     =& \\
+\interpB{x}     =& \\
+\end{tabularx}
+\end{center}
+
+\subsubsection{Types}
+\label{sec:semantics:types}
+
+Types are mapped to their \idris{} equivalents.
+
+\begin{center}
+\begin{tabularx}{0.8\textwidth}{>{$}r<{$}>{\ttfamily}X}
+\interpB{}     =& \\
+\end{tabularx}
+\end{center}
+
+\subsection{Binary Operators}
+\label{sec:semantics:binary-operations}
+
+All binary operations are mapped directly to their \idris{} versions.
+
+\begin{center}
+\begin{tabularx}{0.8\textwidth}{>{$}r<{$}>{\ttfamily}X}
+\interpB{}     =& \\
+\end{tabularx}
+\end{center}
+
+\subsection{Functions \& Conditionals}
+\label{sec:semantics:functions}
+
+Conditionals are mapped to the \idris{} ifthenelse construct, and anonymous functions to \idris{}'s own anonymous functions.
+
+\begin{center}
+\begin{tabularx}{0.8\textwidth}{>{$}r<{$}>{\ttfamily}X}
+\interpB{}     =& \\
+\end{tabularx}
+\end{center}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "../tutorial.screen"
+%%% End:

@@ -33,6 +33,8 @@ tutorial.*.pdf
 *.toc
 *.vrb
 *.xdy
+*.bcf
+*.run.xml
 *~
 .DS_Store
 ._DS_Store

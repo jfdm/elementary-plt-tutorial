@@ -241,7 +241,9 @@ data Arith : Context ArithTy -> ArithTy -> Type where
   Mul : Arith g TyValue -> Arith g TyValue -> Arith g TyValue
 \end{code}
 
-\noindent
+\subsection{Updated Semantics}
+\label{sec:typed-arith-var:semantics}
+
 And redefine our interpreter to work with new definition of \texttt{Arith}.
 
 \begin{code}
