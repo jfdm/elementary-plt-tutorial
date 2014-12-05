@@ -50,16 +50,17 @@ data Env : Context Ty -> Type where
   Nil  : Env Nil
   (::) : (e : (String, Int)) -> Env g ->  Env (extend (fst e, TyValue) g)
 
-getValue : String -> Env g -> Int
-getValue n Nil           = 0
+getValue : String -> Env g -> Maybe Int
+getValue n Nil           = Nothing
 getValue n ((a,v) :: xs) = case n == a of
-  True => v
-  False => fromEnv n xs
-
+  True => Just v
+  False => getValue n xs
 
 interp : Env g -> Arith g TyValue -> Int
 interp env (Val x)    = x
-interp env (Var n)    = getValue n env
+interp env (Var n)    = case getValue n env of
+    Just x => x
+    Nothing => 0
 interp env (Neg x)    = (-1) * (interp env x)
 interp env (Add x y)  = (interp env x) + (interp env y)
 interp env (Sub x y)  = (interp env x) - (interp env y)

@@ -21,10 +21,18 @@ using (G:Vect n Ty)
     App : Expr G (TyFun a t)
             -> Expr G a
             -> Expr G t
-    Op  : (interpTy a -> interpTy b -> interpTy c)
+    RelOps : (interpTy a -> interpTy b -> Bool)
             -> Expr G a
             -> Expr G b
-            -> Expr G c
+            -> Expr G TyBool
+    NumOp : (Int -> Int -> Int)
+            -> Expr G TyInt
+            -> Expr G TyInt
+            -> Expr G TyInt
+    BinOp  : (Bool -> Bool -> Bool)
+            -> Expr G TyBool
+            -> Expr G TyBool
+            -> Expr G TyBool
     If  : Expr G TyBool
             -> Lazy (Expr G a)
             -> Lazy (Expr G a)
